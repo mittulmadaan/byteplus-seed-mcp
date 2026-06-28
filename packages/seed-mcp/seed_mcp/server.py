@@ -43,9 +43,11 @@ mcp = FastMCP(
     name="seed",
     instructions=(
         "Tools for generating speech and audio with BytePlus Seed Audio 1.0. "
-        "Use seed_audio_generate to submit a job — it returns a request_id, then poll "
-        "seed_check_task every 5–10 seconds until status == 'completed', which carries "
-        "the audio_url. Pick a preset voice with seed_list_voices, or clone a voice by "
+        "Use seed_audio_generate to submit a job. If the response status is already "
+        "'completed' (synchronous providers like BytePlus), the audio_url is right there. "
+        "Otherwise (async providers like fal) poll seed_check_task every 5–10 seconds until "
+        "status == 'completed', which carries the audio_url. "
+        "Pick a preset voice with seed_list_voices, or clone a voice by "
         "passing up to 3 public reference audio URLs in audio_urls and referencing them "
         "in the prompt as @Audio1, @Audio2, @Audio3. audio_urls and image_url are mutually "
         "exclusive. Reference audio/image must be PUBLIC URLs — local file paths are not "
@@ -116,13 +118,16 @@ def seed_audio_generate(
     except SeedError as exc:
         return _err(exc)
 
-    return {
-        **result.to_dict(),
-        "message": (
+    # Synchronous providers (e.g. BytePlus) return the audio on submit; async
+    # providers (e.g. fal) return a queued task to poll with seed_check_task.
+    if result.succeeded and result.audio_url:
+        message = "Audio is ready. Download or play the audio_url."
+    else:
+        message = (
             f"Job submitted. Poll with seed_check_task(request_id='{result.request_id}') "
             "every 5–10 seconds until status == 'completed'."
-        ),
-    }
+        )
+    return {**result.to_dict(), "message": message}
 
 
 @mcp.tool()

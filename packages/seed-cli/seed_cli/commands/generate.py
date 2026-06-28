@@ -61,6 +61,12 @@ def generate(
             err(str(exc))
             raise typer.Exit(1) from exc
 
+    # Synchronous providers (e.g. BytePlus) return the audio immediately.
+    if result.succeeded and result.audio_url:
+        ok("Audio ready!")
+        console.print(f"\n  [url]{result.audio_url}[/url]\n")
+        return
+
     ok(f"Job submitted  [request_id=[task_id]{result.request_id}[/task_id]]")
 
     if not watch:

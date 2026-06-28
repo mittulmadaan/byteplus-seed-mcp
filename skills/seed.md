@@ -10,10 +10,12 @@ Use this skill to generate speech and audio with **BytePlus Seed Audio 1.0** dir
 Claude Code. Seed Audio turns text (plus optional reference audio or an image) into natural,
 high-quality speech and sound.
 
-> **Provider note:** Seed Audio currently runs through **fal.ai**
-> (`bytedance/seed-audio-1.0`). When BytePlus releases its native API, the backend swaps with
-> no change to these tools — set `SEED_PROVIDER=byteplus`. See
-> [`references/platform.md`](references/platform.md).
+> **Provider note:** Seed Audio runs through two interchangeable backends, selected with
+> `SEED_PROVIDER`: **fal.ai** (default, async — submit then poll) or **BytePlus / Volcengine
+> Doubao** (`SEED_PROVIDER=byteplus`, synchronous — `seed_audio_generate` returns the
+> `audio_url` in one call, no polling). The tools behave the same either way; just check
+> whether the submit result already carries `audio_url`. Voice ids differ between providers.
+> See [`references/platform.md`](references/platform.md).
 
 ---
 
@@ -31,9 +33,11 @@ high-quality speech and sound.
 
 ## Core rules
 
-1. **Async only.** `seed_audio_generate` returns a `request_id` immediately. Poll
-   `seed_check_task(request_id)` every **5–10 seconds** until `status == "completed"`, which
-   carries `audio_url`. Never assume the audio is ready on submit.
+1. **Check the submit result first.** `seed_audio_generate` returns a `TaskResult`. With
+   **BytePlus** (synchronous) it already has `status == "completed"` and `audio_url` — you're
+   done. With **fal** (async) it returns `status == "queued"`; then poll
+   `seed_check_task(request_id)` every **5–10 seconds** until `status == "completed"`. Don't
+   poll if the audio_url is already present.
 2. **One voice path at a time.** `voice` (preset) and `audio_urls` (cloning) can be combined,
    but `audio_urls` and `image_url` are **mutually exclusive** — pass one or the other.
 3. **Reference inputs must be PUBLIC URLs.** `audio_urls` (≤3, ≤30s & ≤10MB each) and
@@ -93,5 +97,8 @@ high-quality speech and sound.
 - **`Too many audio_urls`** → max 3 reference clips.
 - **Reference URL rejected / 4xx** → the URL must be publicly fetchable (not localhost, not a
   signed URL that expires); re-host on a public bucket.
-- **`BytePlus Seed Audio API is not yet available`** → `SEED_PROVIDER` is set to `byteplus`;
-  unset it (or set `fal`) until the native API ships.
+- **`BytePlus Seed Audio credentials are not configured`** → `SEED_PROVIDER=byteplus` but no
+  key set; `export BYTEPLUS_SEED_API_KEY=...` (or the legacy app-id/access-key pair), or switch
+  back with `SEED_PROVIDER=fal`.
+- **`BytePlus Seed Audio is synchronous … no task to poll`** → you called `seed_check_task` on a
+  BytePlus result; the audio_url was already returned by `seed_audio_generate`.

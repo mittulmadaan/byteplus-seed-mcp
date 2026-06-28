@@ -59,6 +59,11 @@ def test_too_many_audio_refs_raises(client):
         )
 
 
+def test_pitch_out_of_range_raises(client):
+    with pytest.raises(ValidationError, match="pitch"):
+        client.submit_audio("hi", pitch=24)
+
+
 # ---------------------------------------------------------------------------
 # Submit
 # ---------------------------------------------------------------------------
@@ -153,3 +158,34 @@ def test_ping_reports_provider_and_version(client, monkeypatch, tmp_path):
     assert result["status"] == "ok"
     assert result["provider"] == "fal"
     assert "version" in result
+
+
+# ---------------------------------------------------------------------------
+# BytePlus provider (synchronous) via the client
+# ---------------------------------------------------------------------------
+
+def test_byteplus_submit_returns_completed(monkeypatch):
+    monkeypatch.setenv("BYTEPLUS_SEED_API_KEY", "bp-key")
+    client = SeedClient(provider="byteplus")
+    resp = {"code": 0, "url": "https://x/out.mp3", "duration": 4.0, "audio": "QUJD"}
+    with patch("seed.providers.byteplus.request_with_retry", return_value=resp):
+        result = client.submit_audio("A late-night radio drama.")
+    # Synchronous: no polling needed — audio is already here.
+    assert result.succeeded
+    assert result.audio_url == "https://x/out.mp3"
+    assert result.provider == "byteplus"
+
+
+def test_byteplus_check_task_is_synchronous_error(monkeypatch):
+    from seed.exceptions import ProviderError
+    monkeypatch.setenv("BYTEPLUS_SEED_API_KEY", "bp-key")
+    client = SeedClient(provider="byteplus")
+    with pytest.raises(ProviderError, match="synchronous"):
+        client.check_task("some-id")
+
+
+def test_provider_override_beats_env(monkeypatch):
+    monkeypatch.setenv("SEED_PROVIDER", "byteplus")
+    monkeypatch.setenv("FAL_KEY", "fk")
+    client = SeedClient(provider="fal")
+    assert client.ping()["provider"] == "fal"

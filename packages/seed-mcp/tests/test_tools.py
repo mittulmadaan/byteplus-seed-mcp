@@ -39,6 +39,21 @@ def test_audio_generate_forwards_voice_and_refs():
     assert kwargs["audio_urls"] == ["https://example.com/voice.mp3"]
 
 
+def test_audio_generate_synchronous_provider_returns_audio_url():
+    # BytePlus-style: submit returns a completed TaskResult with the audio_url.
+    from seed_mcp.server import seed_audio_generate
+    mock_result = TaskResult(
+        request_id="bp-1", status="completed",
+        audio_url="https://x/out.mp3", provider="byteplus",
+    )
+    with patch("seed_mcp.server.SeedClient") as MockClient:
+        MockClient.return_value.submit_audio.return_value = mock_result
+        result = seed_audio_generate("A late-night radio drama.")
+    assert result["status"] == "completed"
+    assert result["audio_url"] == "https://x/out.mp3"
+    assert "ready" in result["message"].lower()
+
+
 def test_check_task_completed_has_audio_url():
     from seed_mcp.server import seed_check_task
     mock_result = TaskResult(

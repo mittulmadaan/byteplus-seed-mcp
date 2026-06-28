@@ -27,7 +27,10 @@ class SeedClient:
 
     Args:
         fal_key: Explicit fal.ai API key (otherwise resolved from the env/file chain).
-        byteplus_key: Explicit BytePlus Seed key (reserved for the future native API).
+        byteplus_key: Explicit BytePlus X-Api-Key (new console). Resolved from
+            BYTEPLUS_SEED_API_KEY otherwise.
+        byteplus_app_id: Explicit BytePlus App ID (legacy console auth).
+        byteplus_access_key: Explicit BytePlus Access Key (legacy console auth).
         provider: "fal" (default) or "byteplus". Falls back to SEED_PROVIDER.
         profile: Credentials profile in ~/.seed/credentials.
     """
@@ -37,11 +40,15 @@ class SeedClient:
         *,
         fal_key: str | None = None,
         byteplus_key: str | None = None,
+        byteplus_app_id: str | None = None,
+        byteplus_access_key: str | None = None,
         provider: str | None = None,
         profile: str = "default",
     ) -> None:
         self._fal_key = fal_key
         self._byteplus_key = byteplus_key
+        self._byteplus_app_id = byteplus_app_id
+        self._byteplus_access_key = byteplus_access_key
         self._provider_name = (provider or DEFAULT_PROVIDER).strip().lower()
         self._profile = profile
         self._provider: AudioProvider | None = None
@@ -52,6 +59,8 @@ class SeedClient:
                 self._provider_name,
                 fal_key=self._fal_key,
                 byteplus_key=self._byteplus_key,
+                byteplus_app_id=self._byteplus_app_id,
+                byteplus_access_key=self._byteplus_access_key,
                 profile=self._profile,
             )
         return self._provider

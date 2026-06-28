@@ -21,6 +21,20 @@ FAL_QUEUE_BASE = os.getenv("SEED_FAL_QUEUE_BASE", "https://queue.fal.run")
 FAL_MODEL = "bytedance/seed-audio-1.0"
 
 # ---------------------------------------------------------------------------
+# BytePlus / Volcengine Doubao Audio Generation HTTP API
+# (https://www.volcengine.com/docs/6561/2550782) — SYNCHRONOUS: one POST returns
+# the audio (base64 + a temporary 2h URL); there is no task to poll.
+# ---------------------------------------------------------------------------
+BYTEPLUS_TTS_URL = os.getenv(
+    "SEED_BYTEPLUS_TTS_URL", "https://openspeech.bytedance.com/api/v3/tts/create"
+)
+BYTEPLUS_MODEL = "seed-audio-1.0"
+BYTEPLUS_PROMPT_MAXLEN = 2048
+BYTEPLUS_OUTPUT_MAX_SECONDS = 120
+# BytePlus speech_rate / loudness_rate are ints in [-50, 100] (100 = 2.0x, -50 = 0.5x).
+RATE_MIN, RATE_MAX = -50, 100
+
+# ---------------------------------------------------------------------------
 # HTTP tuning (shared across providers)
 # ---------------------------------------------------------------------------
 SUBMIT_TIMEOUT = int(os.getenv("SEED_SUBMIT_TIMEOUT", "30"))
@@ -37,6 +51,7 @@ TERMINAL_STATUSES: frozenset[str] = frozenset({"completed", "failed"})
 OUTPUT_FORMATS: frozenset[str] = frozenset({"mp3", "wav", "pcm", "ogg_opus"})
 SAMPLE_RATES: frozenset[int] = frozenset({8000, 16000, 24000, 32000, 44100, 48000})
 MAX_REFERENCE_AUDIO = 3
+PITCH_MIN, PITCH_MAX = -12, 12
 
 DEFAULT_OUTPUT_FORMAT = "mp3"
 DEFAULT_SAMPLE_RATE = 24000
@@ -72,8 +87,9 @@ MODELS: dict[str, dict[str, Any]] = {
     "seed-audio-1.0": {
         "label": "Seed Audio 1.0",
         "alias": "audio",
-        "provider": "fal",
+        "providers": ["fal", "byteplus"],
         "fal_model": FAL_MODEL,
+        "byteplus_model": BYTEPLUS_MODEL,
         "kind": "audio",
         "output_formats": sorted(OUTPUT_FORMATS),
         "sample_rates": sorted(SAMPLE_RATES),

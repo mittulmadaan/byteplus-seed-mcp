@@ -59,31 +59,59 @@ def load_fal_key(explicit: str | None = None, *, profile: str = "default") -> st
     return value
 
 
-def load_byteplus_key(explicit: str | None = None, *, profile: str = "default") -> str:
-    """Return the BytePlus Seed API key, or raise AuthError.
+def load_byteplus_auth(
+    explicit_key: str | None = None,
+    explicit_app_id: str | None = None,
+    explicit_access_key: str | None = None,
+    *,
+    profile: str = "default",
+) -> dict[str, str]:
+    """Return the BytePlus auth headers, or raise AuthError.
 
-    Reserved for when BytePlus releases its own Seed Audio API.
+    Two modes (use one):
+      - New console: single ``X-Api-Key`` header (BYTEPLUS_SEED_API_KEY).
+      - Legacy console: ``X-Api-App-Id`` + ``X-Api-Access-Key``
+        (BYTEPLUS_SEED_APP_ID / BYTEPLUS_SEED_ACCESS_KEY).
+    The new-console key takes precedence when both are present.
     """
     _load_dotenv()
 
-    value = (
-        (explicit or "").strip()
+    key = (
+        (explicit_key or "").strip()
         or os.getenv("BYTEPLUS_SEED_API_KEY", "").strip()
         or _read_ini(CREDENTIALS_PATH, profile, "byteplus_seed_api_key")
     )
+    if key:
+        return {"X-Api-Key": key}
 
-    if not value:
-        raise AuthError(
-            "BYTEPLUS_SEED_API_KEY is not configured.\n"
-            "Set it via 'export BYTEPLUS_SEED_API_KEY=<key>' or 'seed auth login'."
-        )
-    return value
+    app_id = (
+        (explicit_app_id or "").strip()
+        or os.getenv("BYTEPLUS_SEED_APP_ID", "").strip()
+        or _read_ini(CREDENTIALS_PATH, profile, "byteplus_seed_app_id")
+    )
+    access_key = (
+        (explicit_access_key or "").strip()
+        or os.getenv("BYTEPLUS_SEED_ACCESS_KEY", "").strip()
+        or _read_ini(CREDENTIALS_PATH, profile, "byteplus_seed_access_key")
+    )
+    if app_id and access_key:
+        return {"X-Api-App-Id": app_id, "X-Api-Access-Key": access_key}
+
+    raise AuthError(
+        "BytePlus Seed Audio credentials are not configured.\n"
+        "Set ONE of:\n"
+        "  export BYTEPLUS_SEED_API_KEY=<key>                 (new console)\n"
+        "  export BYTEPLUS_SEED_APP_ID=<id> BYTEPLUS_SEED_ACCESS_KEY=<key>  (legacy)\n"
+        "Get them from the Volcengine Speech console."
+    )
 
 
 def write_credentials(
-    fal_key: str,
+    fal_key: str = "",
     *,
     byteplus_seed_api_key: str = "",
+    byteplus_seed_app_id: str = "",
+    byteplus_seed_access_key: str = "",
     profile: str = "default",
 ) -> None:
     """Persist credentials to ~/.seed/credentials."""
@@ -96,10 +124,14 @@ def write_credentials(
     if not parser.has_section(profile):
         parser.add_section(profile)
 
-    if fal_key:
-        parser.set(profile, "fal_key", fal_key)
-    if byteplus_seed_api_key:
-        parser.set(profile, "byteplus_seed_api_key", byteplus_seed_api_key)
+    for field, value in (
+        ("fal_key", fal_key),
+        ("byteplus_seed_api_key", byteplus_seed_api_key),
+        ("byteplus_seed_app_id", byteplus_seed_app_id),
+        ("byteplus_seed_access_key", byteplus_seed_access_key),
+    ):
+        if value:
+            parser.set(profile, field, value)
 
     with CREDENTIALS_PATH.open("w") as f:
         parser.write(f)
@@ -135,5 +167,13 @@ def credentials_configured(*, profile: str = "default") -> dict[str, bool]:
         "byteplus_seed_api_key": bool(
             os.getenv("BYTEPLUS_SEED_API_KEY", "").strip()
             or _read_ini(CREDENTIALS_PATH, profile, "byteplus_seed_api_key")
+        ),
+        "byteplus_seed_app_id": bool(
+            os.getenv("BYTEPLUS_SEED_APP_ID", "").strip()
+            or _read_ini(CREDENTIALS_PATH, profile, "byteplus_seed_app_id")
+        ),
+        "byteplus_seed_access_key": bool(
+            os.getenv("BYTEPLUS_SEED_ACCESS_KEY", "").strip()
+            or _read_ini(CREDENTIALS_PATH, profile, "byteplus_seed_access_key")
         ),
     }

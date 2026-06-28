@@ -9,6 +9,8 @@ from .config import (
     DEFAULT_SAMPLE_RATE,
     MAX_REFERENCE_AUDIO,
     OUTPUT_FORMATS,
+    PITCH_MAX,
+    PITCH_MIN,
     SAMPLE_RATES,
 )
 from .exceptions import ValidationError
@@ -65,6 +67,11 @@ class AudioParams:
             raise ValidationError("speed must be greater than 0.")
         if self.volume <= 0:
             raise ValidationError("volume must be greater than 0.")
+
+        if self.pitch is not None and not (PITCH_MIN <= self.pitch <= PITCH_MAX):
+            raise ValidationError(
+                f"pitch must be between {PITCH_MIN} and {PITCH_MAX} semitones."
+            )
 
     def to_input(self) -> dict[str, Any]:
         """Build the provider `input` payload, omitting unset optional fields."""

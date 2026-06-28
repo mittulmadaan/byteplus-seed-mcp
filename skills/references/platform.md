@@ -1,34 +1,45 @@
-# Platform, credentials & provider
+# Platform, credentials & providers
 
-## Provider: fal.ai today, BytePlus later
+Seed Audio 1.0 is reachable through **two interchangeable providers**, selected with
+`SEED_PROVIDER`. The SDK hides the wire-format differences behind one interface, so the MCP
+tools, CLI, and this skill behave the same either way.
 
-Seed Audio 1.0 is served through **fal.ai** (`bytedance/seed-audio-1.0`). The SDK wraps this
-behind a provider abstraction, so when BytePlus ships its native Seed Audio API the backend
-swaps with no change to tools, CLI, or this skill.
+| | `fal` (default) | `byteplus` |
+|---|---|---|
+| Backend | fal.ai `bytedance/seed-audio-1.0` | Volcengine Doubao `POST /api/v3/tts/create` |
+| Model | hosted relay | native BytePlus API |
+| Flow | **async** — submit → poll `seed_check_task` | **synchronous** — submit returns the audio in one call |
+| Credential | `FAL_KEY` | `BYTEPLUS_SEED_API_KEY` (or legacy `BYTEPLUS_SEED_APP_ID` + `BYTEPLUS_SEED_ACCESS_KEY`) |
+| Voice field | `voice` (fal preset ids) | `speaker` (Doubao TTS / clone voice ids) — **ids differ from fal's** |
 
-- `SEED_PROVIDER=fal` (default) — uses fal.ai. Requires `FAL_KEY`.
-- `SEED_PROVIDER=byteplus` — reserved; raises "not yet available" until the native API ships
-  and `BYTEPLUS_SEED_API_KEY` is configured.
+> **Async vs sync matters.** With `fal`, `seed_audio_generate` returns `status: "queued"` and
+> you poll `seed_check_task`. With `byteplus`, the same call returns `status: "completed"` with
+> the `audio_url` already present — no polling. Both paths are handled automatically; just check
+> whether the submit result already has `audio_url`.
 
 ## Credentials
 
-Set the fal.ai API key via any of (first wins):
+First non-empty wins: explicit arg → env var → `~/.seed/credentials` → `.env`.
 
-1. `export FAL_KEY=<key>`
-2. `seed auth login` → stores it in `~/.seed/credentials` (chmod 600)
-3. `~/.seed/credentials`:
-   ```ini
-   [default]
-   fal_key = <key>
-   ```
-4. A `.env` file in the working directory (if `python-dotenv` is installed).
+**fal** — `export FAL_KEY=<key>` (or `seed auth login`). Get a key at
+<https://fal.ai/dashboard/keys>.
 
-Get a key at <https://fal.ai/dashboard/keys>. Verify with `seed ping` (CLI) or `seed_ping` (MCP).
+**byteplus** — set ONE of:
+- `export BYTEPLUS_SEED_API_KEY=<key>` (new Volcengine Speech console — recommended), or
+- `export BYTEPLUS_SEED_APP_ID=<id> BYTEPLUS_SEED_ACCESS_KEY=<key>` (legacy console).
+
+Activate the service and collect keys at the Volcengine Speech console
+(<https://console.volcengine.com/speech/>). Then `export SEED_PROVIDER=byteplus`.
+
+Verify either provider with `seed ping` (CLI) or `seed_ping` (MCP) — it reports the active
+provider and which credentials are present.
 
 ## Limits & cost
 
-- Reference audio: ≤ 3 clips, ≤ 30s and ≤ 10 MB each.
-- Reference image: ≤ 10 MB.
-- Generation is **asynchronous** — submit returns a `request_id`; poll every 5–10s.
-- fal bills per request; check current pricing on the model page:
-  <https://fal.ai/models/bytedance/seed-audio-1.0>.
+- Reference audio: ≤ 3 clips, ≤ 30s and ≤ 10 MB each (wav/mp3/pcm/ogg_opus).
+- Reference image: 1 only, ≤ 10 MB (jpeg/png/webp). Cannot mix image + audio refs.
+- BytePlus: `text_prompt` ≤ 2048 chars; output capped at 120s/request; returned `url` is
+  temporary (~2h) — download promptly. Speed/volume map to BytePlus `speech_rate`/`loudness_rate`
+  automatically; `pitch` maps to `pitch_rate` (−12…12).
+- fal bills per request: <https://fal.ai/models/bytedance/seed-audio-1.0>. BytePlus bills per
+  the Volcengine pricing for Seed Audio 1.0.

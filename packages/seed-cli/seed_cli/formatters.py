@@ -19,7 +19,7 @@ def models_table(data: dict) -> None:
     table = Table(title="Available Models", show_lines=True, header_style="bold cyan")
     table.add_column("Model ID", style="blue", no_wrap=True)
     table.add_column("Label")
-    table.add_column("Provider")
+    table.add_column("Providers")
     table.add_column("Output formats")
     table.add_column("Sample rates")
 
@@ -27,7 +27,7 @@ def models_table(data: dict) -> None:
         table.add_row(
             m["model_id"],
             m.get("label", ""),
-            m.get("provider", ""),
+            ", ".join(m.get("providers", [])),
             ", ".join(m.get("output_formats", [])),
             ", ".join(str(s) for s in m.get("sample_rates", [])),
         )

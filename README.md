@@ -10,10 +10,12 @@ terminal, or your own code. Three surfaces over one zero-dependency SDK:
 | Claude Code skill | **Skill** (`skills/seed.md`) |
 | Build my own integration | **SDK** (`seed-sdk`) |
 
-> **Provider:** Seed Audio runs on **fal.ai** (`bytedance/seed-audio-1.0`) today. The SDK
-> hides this behind a provider abstraction, so when BytePlus releases its native Seed Audio
-> API you flip `SEED_PROVIDER=byteplus` (and add `BYTEPLUS_SEED_API_KEY`) — nothing else
-> changes. See [`seed/providers/`](packages/seed-sdk/seed/providers/).
+> **Providers:** Seed Audio runs on **two interchangeable backends**, chosen with
+> `SEED_PROVIDER`: **fal.ai** (`bytedance/seed-audio-1.0`, default, async) or **BytePlus /
+> Volcengine Doubao** (`SEED_PROVIDER=byteplus`, the native `openspeech.bytedance.com` API,
+> synchronous). The SDK hides the wire-format differences behind one interface — the MCP
+> tools, CLI, and skill are identical either way. See
+> [`seed/providers/`](packages/seed-sdk/seed/providers/).
 
 ## Prerequisites
 
@@ -162,9 +164,23 @@ git tag mcp/v0.1.0 && git push --tags   # → seed-mcp
 git tag cli/v0.1.0 && git push --tags   # → seed-cli
 ```
 
+## Providers
+
+```bash
+# fal (default, async)
+export FAL_KEY=<key>            && export SEED_PROVIDER=fal
+
+# BytePlus / Volcengine Doubao (synchronous — submit returns the audio directly)
+export BYTEPLUS_SEED_API_KEY=<key>   # or BYTEPLUS_SEED_APP_ID + BYTEPLUS_SEED_ACCESS_KEY
+export SEED_PROVIDER=byteplus
+```
+
+Voice ids differ between providers (fal presets vs Doubao `speaker` ids). `seed ping` shows
+the active provider and which credentials are configured.
+
 ## Roadmap
 
-- [ ] Native BytePlus Seed Audio provider (`SEED_PROVIDER=byteplus`)
+- [x] Native BytePlus Seed Audio provider (`SEED_PROVIDER=byteplus`)
 - [ ] Local-file upload helper (host local audio/images → public URL)
 - [ ] Additional Seed models as they ship
 
