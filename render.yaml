@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: byteplus-seed-mcp
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    branch: main
+    envVars:
+      - key: MCP_TRANSPORT
+        value: sse
+      - key: SEED_PROVIDER
+        value: fal
+      - key: FAL_KEY
+        sync: false
+      - key: MCP_AUTH_TOKEN
+        sync: false

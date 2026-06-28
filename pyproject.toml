@@ -1,0 +1,35 @@
+[tool.uv.workspace]
+members = [
+    "packages/seed-sdk",
+    "packages/seed-mcp",
+    "packages/seed-cli",
+]
+
+[tool.uv.sources]
+seed-sdk = { workspace = true }
+seed-mcp = { workspace = true }
+seed-cli = { workspace = true }
+
+[tool.ruff]
+target-version = "py310"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
+# E501: line length handled by formatter; B008: Typer requires Option() calls in defaults.
+ignore = ["E501", "B008"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["seed", "seed_mcp", "seed_cli"]
+
+[tool.mypy]
+python_version = "3.10"
+strict = true
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = [
+    "packages/seed-sdk/tests",
+    "packages/seed-mcp/tests",
+    "packages/seed-cli/tests",
+]

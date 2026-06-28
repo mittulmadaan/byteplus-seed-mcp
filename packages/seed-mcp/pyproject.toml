@@ -1,0 +1,29 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "seed-mcp"
+version = "0.1.0"
+description = "MCP server exposing BytePlus Seed Audio generation to AI clients"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+keywords = ["byteplus", "seed", "seed-audio", "mcp", "tts", "ai"]
+dependencies = [
+    "seed-sdk>=0.1.0",
+    "mcp>=1.0.0",
+    "uvicorn>=0.30.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "mypy>=1.8.0",
+    "ruff>=0.3.0",
+]
+
+[project.urls]
+Repository = "https://github.com/byteplus/byteplus-seed-mcp"
+
+[tool.hatch.build.targets.wheel]
+packages = ["seed_mcp"]

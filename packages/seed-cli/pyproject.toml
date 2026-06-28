@@ -1,0 +1,33 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "seed-cli"
+version = "0.1.0"
+description = "CLI for BytePlus Seed Audio generation"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+keywords = ["byteplus", "seed", "seed-audio", "cli", "tts", "ai"]
+dependencies = [
+    "seed-sdk>=0.1.0",
+    "typer>=0.12.0",
+    "rich>=13.0.0",
+]
+
+[project.optional-dependencies]
+mcp = ["seed-mcp>=0.1.0"]   # install CLI + MCP server together
+dev = [
+    "pytest>=8.0.0",
+    "mypy>=1.8.0",
+    "ruff>=0.3.0",
+]
+
+[project.scripts]
+seed = "seed_cli.main:app"
+
+[project.urls]
+Repository = "https://github.com/byteplus/byteplus-seed-mcp"
+
+[tool.hatch.build.targets.wheel]
+packages = ["seed_cli"]
