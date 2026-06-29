@@ -11,11 +11,11 @@ terminal, or your own code. Three surfaces over one zero-dependency SDK:
 | Build my own integration | **SDK** (`seed-sdk`) |
 
 > **Providers:** Seed Audio runs on **two interchangeable backends**, chosen with
-> `SEED_PROVIDER`: **fal.ai** (`bytedance/seed-audio-1.0`, default, async) or **BytePlus /
-> Volcengine Doubao** (`SEED_PROVIDER=byteplus`, the native `openspeech.bytedance.com` API,
-> synchronous). The SDK hides the wire-format differences behind one interface — the MCP
-> tools, CLI, and skill are identical either way. See
-> [`seed/providers/`](packages/seed-sdk/seed/providers/).
+> `SEED_PROVIDER`: **fal.ai** (`bytedance/seed-audio-1.0`, default, async) or **BytePlus**
+> (`SEED_PROVIDER=byteplus`, the native `voice.ap-southeast-1.bytepluses.com` API,
+> synchronous — also works against the Volcengine host via `SEED_BYTEPLUS_TTS_URL`). The SDK
+> hides the wire-format differences behind one interface — the MCP tools, CLI, and skill are
+> identical either way. See [`seed/providers/`](packages/seed-sdk/seed/providers/).
 
 ## Prerequisites
 

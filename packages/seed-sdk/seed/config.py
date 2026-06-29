@@ -21,12 +21,15 @@ FAL_QUEUE_BASE = os.getenv("SEED_FAL_QUEUE_BASE", "https://queue.fal.run")
 FAL_MODEL = "bytedance/seed-audio-1.0"
 
 # ---------------------------------------------------------------------------
-# BytePlus / Volcengine Doubao Audio Generation HTTP API
-# (https://www.volcengine.com/docs/6561/2550782) — SYNCHRONOUS: one POST returns
-# the audio (base64 + a temporary 2h URL); there is no task to poll.
+# BytePlus Seed Audio 1.0 HTTP API — SYNCHRONOUS: one POST returns the audio
+# (base64 + a temporary 2h URL); there is no task to poll.
+# Default host is the BytePlus international endpoint; override with
+# SEED_BYTEPLUS_TTS_URL to use the Volcengine host
+# (https://openspeech.bytedance.com/api/v3/tts/create).
 # ---------------------------------------------------------------------------
 BYTEPLUS_TTS_URL = os.getenv(
-    "SEED_BYTEPLUS_TTS_URL", "https://openspeech.bytedance.com/api/v3/tts/create"
+    "SEED_BYTEPLUS_TTS_URL",
+    "https://voice.ap-southeast-1.bytepluses.com/api/v3/tts/create",
 )
 BYTEPLUS_MODEL = "seed-audio-1.0"
 BYTEPLUS_PROMPT_MAXLEN = 2048

@@ -6,7 +6,7 @@ tools, CLI, and this skill behave the same either way.
 
 | | `fal` (default) | `byteplus` |
 |---|---|---|
-| Backend | fal.ai `bytedance/seed-audio-1.0` | Volcengine Doubao `POST /api/v3/tts/create` |
+| Backend | fal.ai `bytedance/seed-audio-1.0` | BytePlus `voice.ap-southeast-1.bytepluses.com/api/v3/tts/create` |
 | Model | hosted relay | native BytePlus API |
 | Flow | **async** — submit → poll `seed_check_task` | **synchronous** — submit returns the audio in one call |
 | Credential | `FAL_KEY` | `BYTEPLUS_SEED_API_KEY` (or legacy `BYTEPLUS_SEED_APP_ID` + `BYTEPLUS_SEED_ACCESS_KEY`) |
@@ -25,11 +25,12 @@ First non-empty wins: explicit arg → env var → `~/.seed/credentials` → `.e
 <https://fal.ai/dashboard/keys>.
 
 **byteplus** — set ONE of:
-- `export BYTEPLUS_SEED_API_KEY=<key>` (new Volcengine Speech console — recommended), or
+- `export BYTEPLUS_SEED_API_KEY=<key>` (new BytePlus console — recommended), or
 - `export BYTEPLUS_SEED_APP_ID=<id> BYTEPLUS_SEED_ACCESS_KEY=<key>` (legacy console).
 
-Activate the service and collect keys at the Volcengine Speech console
-(<https://console.volcengine.com/speech/>). Then `export SEED_PROVIDER=byteplus`.
+Activate **Dola_SeedSpeech_Seed_Audio_V1** and collect the key at the BytePlus console
+(<https://console.byteplus.com/voice/>), then `export SEED_PROVIDER=byteplus`. The SDK defaults
+to the BytePlus host; set `SEED_BYTEPLUS_TTS_URL` to target the Volcengine host instead.
 
 Verify either provider with `seed ping` (CLI) or `seed_ping` (MCP) — it reports the active
 provider and which credentials are present.
