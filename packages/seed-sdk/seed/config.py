@@ -33,6 +33,9 @@ BYTEPLUS_TTS_URL = os.getenv(
 BYTEPLUS_MODEL = "seed-audio-1.0"
 BYTEPLUS_PROMPT_MAXLEN = 2048
 BYTEPLUS_OUTPUT_MAX_SECONDS = 120
+# BytePlus is synchronous and can take up to ~120s (esp. voice cloning / long output);
+# the API's own example uses --max-time 120, so give it a generous read timeout.
+BYTEPLUS_TIMEOUT = int(os.getenv("SEED_BYTEPLUS_TIMEOUT", "120"))
 # BytePlus speech_rate / loudness_rate are ints in [-50, 100] (100 = 2.0x, -50 = 0.5x).
 RATE_MIN, RATE_MAX = -50, 100
 

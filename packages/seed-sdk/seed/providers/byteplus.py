@@ -26,10 +26,10 @@ from typing import Any
 from ..config import (
     BYTEPLUS_MODEL,
     BYTEPLUS_PROMPT_MAXLEN,
+    BYTEPLUS_TIMEOUT,
     BYTEPLUS_TTS_URL,
     RATE_MAX,
     RATE_MIN,
-    SUBMIT_TIMEOUT,
 )
 from ..credentials import credentials_configured, load_byteplus_auth
 from ..exceptions import APIError, ProviderError, ValidationError
@@ -124,7 +124,7 @@ class BytePlusProvider(AudioProvider):
             method="POST",
             headers=headers,
             payload=self.build_payload(params),
-            timeout=SUBMIT_TIMEOUT,
+            timeout=BYTEPLUS_TIMEOUT,
         )
 
         audio_url = resp.get("url") or None
