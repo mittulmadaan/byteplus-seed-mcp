@@ -1,6 +1,6 @@
 ---
 name: seed
-description: Generate speech and audio with BytePlus Seed Audio 1.0 — text-to-speech, voice presets, voice cloning from reference audio, multi-speaker drama, and task tracking. Runs on fal.ai today.
+description: Generate speech and audio with BytePlus Seed Audio 1.0 — text-to-speech, voice presets, voice cloning from reference audio, multi-speaker drama, and task tracking. Runs on the BytePlus API by default (fal.ai optional).
 version: 0.1.0
 ---
 
@@ -11,11 +11,11 @@ Claude Code. Seed Audio turns text (plus optional reference audio or an image) i
 high-quality speech and sound.
 
 > **Provider note:** Seed Audio runs through two interchangeable backends, selected with
-> `SEED_PROVIDER`: **fal.ai** (default, async — submit then poll) or **BytePlus / Volcengine
-> Doubao** (`SEED_PROVIDER=byteplus`, synchronous — `seed_audio_generate` returns the
-> `audio_url` in one call, no polling). The tools behave the same either way; just check
-> whether the submit result already carries `audio_url`. Voice ids differ between providers.
-> See [`references/platform.md`](references/platform.md).
+> `SEED_PROVIDER`: **BytePlus** (default, synchronous — `seed_audio_generate` returns the
+> `audio_url` in one call, no polling) or **fal.ai** (`SEED_PROVIDER=fal`, async — submit
+> then poll). The tools behave the same either way; just check whether the submit result
+> already carries `audio_url`. Voice ids differ between providers. See
+> [`references/platform.md`](references/platform.md).
 
 ---
 

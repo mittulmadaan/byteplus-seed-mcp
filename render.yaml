@@ -8,7 +8,11 @@ services:
       - key: MCP_TRANSPORT
         value: sse
       - key: SEED_PROVIDER
-        value: fal
+        value: byteplus
+      # Set in the Render dashboard (sync: false = secret, not stored in the repo).
+      - key: BYTEPLUS_SEED_API_KEY
+        sync: false
+      # Optional — only needed if you switch SEED_PROVIDER back to fal.
       - key: FAL_KEY
         sync: false
       - key: MCP_AUTH_TOKEN

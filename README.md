@@ -11,19 +11,19 @@ terminal, or your own code. Three surfaces over one zero-dependency SDK:
 | Build my own integration | **SDK** (`seed-sdk`) |
 
 > **Providers:** Seed Audio runs on **two interchangeable backends**, chosen with
-> `SEED_PROVIDER`: **fal.ai** (`bytedance/seed-audio-1.0`, default, async) or **BytePlus**
-> (`SEED_PROVIDER=byteplus`, the native `voice.ap-southeast-1.bytepluses.com` API,
-> synchronous — also works against the Volcengine host via `SEED_BYTEPLUS_TTS_URL`). The SDK
-> hides the wire-format differences behind one interface — the MCP tools, CLI, and skill are
-> identical either way. See [`seed/providers/`](packages/seed-sdk/seed/providers/).
+> `SEED_PROVIDER`: **BytePlus** (default — the native `voice.ap-southeast-1.bytepluses.com`
+> API, synchronous; also works against the Volcengine host via `SEED_BYTEPLUS_TTS_URL`) or
+> **fal.ai** (`SEED_PROVIDER=fal`, `bytedance/seed-audio-1.0`, async). The SDK hides the
+> wire-format differences behind one interface — the MCP tools, CLI, and skill are identical
+> either way. See [`seed/providers/`](packages/seed-sdk/seed/providers/).
 
 ## Prerequisites
 
 - **Python 3.10+** and a local clone of this repo.
 - Credentials for one provider:
-  - **fal.ai** (default): a `FAL_KEY` — get one at <https://fal.ai/dashboard/keys>.
-  - **BytePlus / Volcengine Doubao** (optional): `BYTEPLUS_SEED_API_KEY` (or the legacy
-    `BYTEPLUS_SEED_APP_ID` + `BYTEPLUS_SEED_ACCESS_KEY`), then `SEED_PROVIDER=byteplus`.
+  - **BytePlus** (default): `BYTEPLUS_SEED_API_KEY` (or the legacy `BYTEPLUS_SEED_APP_ID` +
+    `BYTEPLUS_SEED_ACCESS_KEY`) — from the BytePlus console (<https://console.byteplus.com/voice/>).
+  - **fal.ai** (optional): a `FAL_KEY` (<https://fal.ai/dashboard/keys>), then `SEED_PROVIDER=fal`.
 
 ## Install
 
@@ -52,7 +52,8 @@ Expose Seed Audio to Claude Desktop / Claude Code.
 After installing (above):
 
 ```bash
-export FAL_KEY=<your-fal-key>
+export BYTEPLUS_SEED_API_KEY=<your-byteplus-key>   # default provider
+# (or use fal: export FAL_KEY=<key> && export SEED_PROVIDER=fal)
 python -m seed_mcp                  # stdio transport (default)
 ```
 
@@ -72,7 +73,8 @@ Register it with `seed skill install` (below), or add it manually:
 docker build -t byteplus-seed-mcp .
 docker run -p 8000:8000 \
   -e MCP_TRANSPORT=sse \
-  -e FAL_KEY=<key> \
+  -e SEED_PROVIDER=byteplus \
+  -e BYTEPLUS_SEED_API_KEY=<key> \
   -e MCP_AUTH_TOKEN=<strong-random-token> \
   byteplus-seed-mcp
 # health: GET http://localhost:8000/health
@@ -109,7 +111,7 @@ clients authenticate with `MCP_AUTH_TOKEN` only:
 ## 💻 CLI
 
 ```bash
-seed auth login                      # stores FAL_KEY in ~/.seed/credentials (installed above)
+seed auth login                      # stores provider keys in ~/.seed/credentials (BytePlus by default)
 
 # Generate
 seed generate \
@@ -154,7 +156,7 @@ seed skill install                   # copies the skill + registers the MCP serv
 ```python
 from seed import SeedClient
 
-client = SeedClient()                                  # provider from SEED_PROVIDER (default: fal)
+client = SeedClient()                                  # provider from SEED_PROVIDER (default: byteplus)
 result = client.submit_audio(
     "A short suspense radio drama in a late-night convenience store.",
     output_format="mp3",
@@ -192,9 +194,9 @@ Resolution order (first non-empty wins): explicit arg → env var → `~/.seed/c
 
 | Provider | Env var(s) |
 |---|---|
-| fal (default) | `FAL_KEY` |
-| BytePlus (new console) | `BYTEPLUS_SEED_API_KEY` |
+| BytePlus (default, new console) | `BYTEPLUS_SEED_API_KEY` |
 | BytePlus (legacy console) | `BYTEPLUS_SEED_APP_ID` + `BYTEPLUS_SEED_ACCESS_KEY` |
+| fal (`SEED_PROVIDER=fal`) | `FAL_KEY` |
 
 > Never commit credentials or bake them into images. Protect hosted SSE endpoints with
 > `MCP_AUTH_TOKEN`.
@@ -212,15 +214,14 @@ git tag cli/v0.1.0 && git push --tags   # → seed-cli
 ## Providers
 
 ```bash
-# fal (default, async)
-export FAL_KEY=<key>            && export SEED_PROVIDER=fal
-
-# BytePlus / Volcengine Doubao (synchronous — submit returns the audio directly)
+# BytePlus (default, synchronous — submit returns the audio directly)
 export BYTEPLUS_SEED_API_KEY=<key>   # or BYTEPLUS_SEED_APP_ID + BYTEPLUS_SEED_ACCESS_KEY
-export SEED_PROVIDER=byteplus
+
+# fal (opt-in, async)
+export FAL_KEY=<key> && export SEED_PROVIDER=fal
 ```
 
-Voice ids differ between providers (fal presets vs Doubao `speaker` ids). `seed ping` shows
+Voice ids differ between providers (fal presets vs BytePlus `speaker` ids). `seed ping` shows
 the active provider and which credentials are configured.
 
 ## Roadmap

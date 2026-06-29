@@ -21,24 +21,36 @@ app = typer.Typer(help="Manage Seed credentials.")
 def login(
     profile: str = typer.Option("default", help="Credentials profile name."),
 ) -> None:
-    """Interactively store FAL_KEY in ~/.seed/credentials."""
+    """Interactively store provider credentials in ~/.seed/credentials.
+
+    BytePlus is the default provider; fal.ai is optional. Enter at least one.
+    """
     console.print("\n[bold]Seed — credential setup[/bold]")
-    console.print("Credentials are stored in [cyan]~/.seed/credentials[/cyan] (chmod 600).\n")
-    console.print("Seed Audio currently runs on fal.ai.")
-    console.print("Get a key at: [url]https://fal.ai/dashboard/keys[/url]\n")
+    console.print("Credentials are stored in [cyan]~/.seed/credentials[/cyan] (chmod 600).")
+    console.print("Enter at least one provider key (leave the other blank to skip).\n")
 
-    fal_key = Prompt.ask("  FAL_KEY  (fal.ai API key)", password=True)
+    console.print("[bold]BytePlus[/bold] (default) — [url]https://console.byteplus.com/voice/[/url]")
+    byteplus_key = Prompt.ask(
+        "  BYTEPLUS_SEED_API_KEY", password=True, default="", show_default=False
+    )
 
-    if not fal_key:
-        err("FAL_KEY is required. Aborting.")
+    console.print("\n[bold]fal.ai[/bold] (optional) — [url]https://fal.ai/dashboard/keys[/url]")
+    fal_key = Prompt.ask("  FAL_KEY", password=True, default="", show_default=False)
+
+    if not byteplus_key and not fal_key:
+        err("At least one provider key is required. Aborting.")
         raise typer.Exit(1)
 
-    write_credentials(fal_key.strip(), profile=profile)
+    write_credentials(
+        fal_key.strip(),
+        byteplus_seed_api_key=byteplus_key.strip(),
+        profile=profile,
+    )
     ok(f"Credentials saved to ~/.seed/credentials  [profile: {profile}]")
 
     info("Verifying configuration with seed ping…")
     try:
-        result = SeedClient(fal_key=fal_key.strip(), profile=profile).ping()
+        result = SeedClient(profile=profile).ping()
         ok(f"Ready  (SDK v{result['version']}, provider: {result['provider']})")
     except SeedError as exc:
         warn(f"Saved, but ping failed: {exc}")
@@ -52,18 +64,20 @@ def check(
     status = credentials_configured(profile=profile)
     console.print(f"\n[bold]Credential status[/bold]  (profile: [cyan]{profile}[/cyan])\n")
 
-    for key, label in [
-        ("fal_key", "FAL_KEY                (audio generation)   "),
-        ("byteplus_seed_api_key", "BYTEPLUS_SEED_API_KEY  (future native API)  "),
+    byteplus_legacy = status["byteplus_seed_app_id"] and status["byteplus_seed_access_key"]
+    for label, present in [
+        ("BYTEPLUS_SEED_API_KEY  (default provider)   ", status["byteplus_seed_api_key"]),
+        ("BYTEPLUS_SEED_APP_ID + ACCESS_KEY (legacy)  ", byteplus_legacy),
+        ("FAL_KEY                (fal.ai provider)    ", status["fal_key"]),
     ]:
-        mark = "[success]✔[/success]" if status[key] else "[error]✖[/error]"
-        state = "configured" if status[key] else "missing"
+        mark = "[success]✔[/success]" if present else "[error]✖[/error]"
+        state = "configured" if present else "missing"
         console.print(f"  {mark}  {label}  [dim]{state}[/dim]")
 
-    if status["fal_key"]:
-        console.print("\n  [success]FAL_KEY is configured — ready to generate.[/success]\n")
+    if status["byteplus_seed_api_key"] or byteplus_legacy or status["fal_key"]:
+        console.print("\n  [success]At least one provider is configured — ready to generate.[/success]\n")
     else:
-        console.print("\n  [error]Missing:[/error] FAL_KEY")
+        console.print("\n  [error]No provider configured.[/error]")
         console.print("  Run [cyan]seed auth login[/cyan] to configure.\n")
         raise typer.Exit(1)
 

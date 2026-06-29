@@ -4,13 +4,13 @@ Seed Audio 1.0 is reachable through **two interchangeable providers**, selected 
 `SEED_PROVIDER`. The SDK hides the wire-format differences behind one interface, so the MCP
 tools, CLI, and this skill behave the same either way.
 
-| | `fal` (default) | `byteplus` |
+| | `byteplus` (default) | `fal` |
 |---|---|---|
-| Backend | fal.ai `bytedance/seed-audio-1.0` | BytePlus `voice.ap-southeast-1.bytepluses.com/api/v3/tts/create` |
-| Model | hosted relay | native BytePlus API |
-| Flow | **async** — submit → poll `seed_check_task` | **synchronous** — submit returns the audio in one call |
-| Credential | `FAL_KEY` | `BYTEPLUS_SEED_API_KEY` (or legacy `BYTEPLUS_SEED_APP_ID` + `BYTEPLUS_SEED_ACCESS_KEY`) |
-| Voice field | `voice` (fal preset ids) | `speaker` (Doubao TTS / clone voice ids) — **ids differ from fal's** |
+| Backend | BytePlus `voice.ap-southeast-1.bytepluses.com/api/v3/tts/create` | fal.ai `bytedance/seed-audio-1.0` |
+| Model | native BytePlus API | hosted relay |
+| Flow | **synchronous** — submit returns the audio in one call | **async** — submit → poll `seed_check_task` |
+| Credential | `BYTEPLUS_SEED_API_KEY` (or legacy `BYTEPLUS_SEED_APP_ID` + `BYTEPLUS_SEED_ACCESS_KEY`) | `FAL_KEY` |
+| Voice field | `speaker` (BytePlus/Doubao TTS / clone voice ids) | `voice` (fal preset ids) — **ids differ** |
 
 > **Async vs sync matters.** With `fal`, `seed_audio_generate` returns `status: "queued"` and
 > you poll `seed_check_task`. With `byteplus`, the same call returns `status: "completed"` with

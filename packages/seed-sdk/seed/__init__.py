@@ -1,4 +1,4 @@
-"""Seed SDK — BytePlus Seed Audio generation (fal.ai today, BytePlus when released)."""
+"""Seed SDK — BytePlus Seed Audio generation (BytePlus by default; fal.ai optional)."""
 from .client import SeedClient
 from .config import __version__
 from .exceptions import (

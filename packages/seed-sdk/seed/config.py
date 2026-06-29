@@ -9,9 +9,8 @@ __version__ = "0.1.0"
 # ---------------------------------------------------------------------------
 # Provider selection
 # ---------------------------------------------------------------------------
-# Today Seed Audio runs on fal.ai. When BytePlus ships its own API, set
-# SEED_PROVIDER=byteplus (or flip DEFAULT_PROVIDER) — nothing else changes.
-DEFAULT_PROVIDER = os.getenv("SEED_PROVIDER", "fal").strip().lower()
+# BytePlus is the default backend; set SEED_PROVIDER=fal to use fal.ai instead.
+DEFAULT_PROVIDER = os.getenv("SEED_PROVIDER", "byteplus").strip().lower()
 PROVIDERS: frozenset[str] = frozenset({"fal", "byteplus"})
 
 # ---------------------------------------------------------------------------

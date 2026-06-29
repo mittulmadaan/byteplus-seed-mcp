@@ -12,7 +12,7 @@ from seed.exceptions import ValidationError
 @pytest.fixture
 def client(monkeypatch):
     monkeypatch.setenv("FAL_KEY", "test-fal-key")
-    return SeedClient()
+    return SeedClient(provider="fal")
 
 
 def _patch_http(responses):
@@ -185,7 +185,11 @@ def test_byteplus_check_task_is_synchronous_error(monkeypatch):
 
 
 def test_provider_override_beats_env(monkeypatch):
-    monkeypatch.setenv("SEED_PROVIDER", "byteplus")
     monkeypatch.setenv("FAL_KEY", "fk")
     client = SeedClient(provider="fal")
     assert client.ping()["provider"] == "fal"
+
+
+def test_default_provider_is_byteplus(monkeypatch):
+    monkeypatch.setenv("BYTEPLUS_SEED_API_KEY", "bp")
+    assert SeedClient().ping()["provider"] == "byteplus"
